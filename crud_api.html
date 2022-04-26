@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  
+   
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+  <style>
+  #app{
+      background-color: #ffffff;      
+  }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>   
+       <v-flex class="text-center align-center"><label for="">complete the form plese ;)</label>
+       <v-btn class="mx-2 mt-4"  fab dark color="#00B0FF" @click="formNuevo()"><v-icon dark>mdi-plus</v-icon></v-btn>   
+               
+       </v-flex>              
+         
+        <v-card class="mx-auto mt-5" color="transparent" max-width="1280" elevation="8">                    
+      
+        <v-simple-table class="mt-5">
+            <template v-slot:default>
+                <thead>
+                    <tr class="indigo darken-4">
+                        <th class="white--text">City</th>
+                        <th class="white--text">State</th>
+                        <th class="white--text">Country</th>
+                        <th class="white--text">Favorite Marvel character</th>
+                        <th class="white--text">Favorite Marvel comic</th>
+                        <th class="white--text">Created date</th>
+                        <th class="white--text">Updated date</th>
+                        <th class="white--text text-center">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="user_data in users" :key="user_data.id">
+                    <td>{{ user_data.city }}</td>
+                    <td>{{ user_data.state }}</td>
+                    <td>{{ user_data.country }}</td>
+                    <td>{{ user_data.favorite_character }}</td>
+                    <td>{{ user_data.favorite_comic }}</td>
+                    <td>{{ user_data.created_at }}</td>
+                    <td>{{ user_data.updated_at	}}</td>
+                  
+                    <td>
+                        <v-btn fab dark color="#00BCD4" small @click="formEditar(user_data.id, user_data.city, user_data.state, user_data.country)"><v-icon>mdi-pencil</v-icon></v-btn>
+                        <v-btn fab dark color="#E53935" small @click="borrar(user_data.id)"><v-icon>mdi-delete</v-icon></v-btn>
+                    </td>
+                    </tr>
+                </tbody>
+            </template>
+        </v-simple-table>
+        </v-card>        
+
+      <v-dialog v-model="dialog" max-width="500">        
+        <v-card>
+          <v-card-title class="blue darken-2 white--text">New register</v-card-title>    
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                  <input v-model="user_data.id" hidden></input>
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="user_data.city" label="City" solo required>{{user_data.city}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="user_data.state" label="State" solo required>{{user_data.state}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="user_data.country" label="Country" solo required>{{user_data.country}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="user_data.favorite_character" label="Favorite charter" solo required>{{user_data.favorite_character}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="4">
+                    <v-text-field v-model="user_data.favorite_comic" label="Favorite comic" solo required>{{user_data.favorite_comic}}</v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="dialog=false" color="blue-grey" dark>Cancelar</v-btn>
+            <v-btn @click="guardar()" type="submit" color="blue darken-2" dark>Guardar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.5.7/vuetify.min.js" integrity="sha512-BPXn+V2iK/Zu6fOm3WiAdC1pv9uneSxCCFsJHg8Cs3PEq6BGRpWgXL+EkVylCnl8FpJNNNqvY+yTMQRi4JIfZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+
+    let url = 'http://localhost:8000/api/users/';
+
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+       data() {
+        return {            
+            users: [],
+            dialog: false,
+            operacion: '',            
+            user_data:{
+                id: null,
+                city:'',
+                state:'',
+                country:'',
+                favorite_character:"",
+                favorite_comic:"",
+            }          
+        }
+       },
+       created(){               
+            this.mostrar()
+       },  
+       methods:{          
+            //MÉTODOS PARA EL CRUD
+            mostrar:function(){
+              axios.get(url)
+              .then(response =>{
+                this.users = response.data;                   
+              })
+            },
+            crear:function(){
+                let parametros = {city:this.user_data.city, state:this.user_data.state, country:this.user_data.country,
+                  favorite_character:this.user_data.favorite_character,
+                  favorite_comic:this.user_data.favorite_comic};                
+                axios.post(url, parametros)
+                .then(response =>{
+                  this.mostrar();
+                });     
+                this.user_data.city="";
+                this.user_data.state="";
+                this.user_data.country="";
+                this.user_data.favorite_character="";
+                this.user_data.favorite_comic="";
+            },                        
+            editar: function(){
+            let parametros = {city:this.user_data.city, state:this.user_data.state, country:this.user_data.country,
+                  favorite_character:this.user_data.favorite_character,
+                  favorite_comic:this.user_data.favorite_comic, id:this.user_data.id};                            
+            //console.log(parametros);                   
+                 axios.put(url+this.user_data.id, parametros)                            
+                  .then(response => {                                
+                     this.mostrar();
+                  })                
+                  .catch(error => {
+                      console.log(error);            
+                  });
+            },
+            borrar:function(id){
+             Swal.fire({
+                title: '¿Confirma eliminar el registro?',   
+                confirmButtonText: `Confirmar`,                  
+                showCancelButton: true,                          
+              }).then((result) => {                
+                if (result.isConfirmed) {      
+                      //procedimiento borrar
+                      axios.delete(url+id)
+                      .then(response =>{           
+                          this.mostrar();
+                       });      
+                      Swal.fire('¡Eliminado!', '', 'success')
+                } else if (result.isDenied) {                  
+                }
+              });              
+            },
+
+            //Botones y formularios
+            guardar:function(){
+              if(this.operacion=='crear'){
+                this.crear();                
+              }
+              if(this.operacion=='editar'){ 
+                this.editar();                           
+              }
+              this.dialog=false;                        
+            }, 
+            formNuevo:function () {
+              this.dialog=true;
+              this.operacion='crear';
+              this.user_data.city='';                           
+              this.user_data.state="";
+              this.user_data.country="";
+              this.user_data.favorite_character="";
+              this.user_data.favorite_comic="";
+            },
+            formEditar:function(id, city, state, country, favorite_character, favorite_comic){
+              //capturamos los datos del registro seleccionado y los mostramos en el formulario
+              this.user_data.id = id;
+              this.user_data.city = city;                            
+              this.user_data.state = state;
+              this.user_data.country="";
+              this.user_data.favorite_character="";
+              this.user_data.favorite_comic="";                    
+              this.dialog=true;                            
+              this.operacion='editar';
+            }
+       }      
+    });
+  </script>
+</body>
+</html> 
